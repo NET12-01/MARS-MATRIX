@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mars Matrix PRO</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+</head>
+<body>
+
+    <!-- ==================== PANTALLA DE CARGA ==================== -->
+    <div id="loadingScreen" class="screen">
+        <div class="stars"></div>
+        <div class="screen-content" style="max-width:400px;text-align:center;">
+            <div class="loading-spinner"></div>
+            <h2 style="color:#00ffaa;margin-top:20px;">🚀 MARS MATRIX PRO</h2>
+            <p style="color:#aaa;margin-top:10px;">Cargando recursos...</p>
+            <div class="loading-bar-container">
+                <div id="loadingBar" class="loading-bar" style="width:0%;"></div>
+            </div>
+            <p id="loadingText" style="color:#666;font-size:0.8rem;margin-top:10px;">Iniciando...</p>
+        </div>
+    </div>
+
+    <!-- ==================== LOGIN ==================== -->
+    <div id="loginScreen" class="screen">
+        <div class="stars"></div>
+        <div class="screen-content">
+            <div class="login-header">
+                <img src="img/logo.jpg" alt="Mars Matrix PRO" class="game-logo" onerror="this.style.display='none'">
+                <h2 class="login-title">🚀 MARS MATRIX PRO</h2>
+                <p class="game-tagline">⚡ 10 Niveles + Modos Especiales ⚡</p>
+            </div>
+            <div class="login-form">
+                <div class="form-group">
+                    <label class="form-label">👤 USUARIO</label>
+                    <input type="text" id="loginUsername" class="form-input" placeholder="Usuario" value="admin12">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔒 CONTRASEÑA</label>
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Contraseña" value="mars000">
+                </div>
+                <div class="login-actions">
+                    <button id="loginButton" class="login-btn primary-btn">🚀 INICIAR SESIÓN</button>
+                    <button id="registerButton" class="login-btn secondary-btn">📝 CREAR CUENTA</button>
+                </div>
+            </div>
+            <div class="login-info">
+                <p>👑 Admin: <strong>admin12</strong> / <strong>mars000</strong></p>
+                <p style="font-size:0.8rem;color:#666;">¿No tienes cuenta? ¡Regístrate gratis!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== REGISTRO ==================== -->
+    <div id="registerScreen" class="screen">
+        <div class="stars"></div>
+        <div class="screen-content">
+            <button id="backToLogin" class="back-btn">← VOLVER</button>
+            <div class="login-header">
+                <h2 class="login-title">📝 CREAR CUENTA</h2>
+                <p class="game-tagline">Únete a la aventura espacial</p>
+            </div>
+            <div class="login-form">
+                <div class="form-group">
+                    <label class="form-label">👤 USUARIO</label>
+                    <input type="text" id="registerUsername" class="form-input" placeholder="Nombre de usuario">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">🔒 CONTRASEÑA</label>
+                    <input type="password" id="registerPassword" class="form-input" placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">✅ CONFIRMAR</label>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Repite contraseña">
+                </div>
+                <div class="login-actions">
+                    <button id="registerSubmit" class="login-btn primary-btn">✅ REGISTRARSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== INICIO ==================== -->
+    <div id="startScreen" class="screen">
+        <div class="stars"></div>
+        <div class="screen-content">
+            <div class="user-info">
+                <div class="user-icon">👤</div>
+                <div class="user-details">
+                    <div id="userDisplayName" class="user-name">Usuario</div>
+                    <div id="userDisplayRole" class="user-role">🎖️ Jugador</div>
+                    <div id="userDifficultyDisplay" style="font-size:0.7rem;color:#FFD700;">🌞 NORMAL</div>
+                </div>
+                <button id="logoutButton" class="logout-btn">🚪 SALIR</button>
+            </div>
+
+            <h1 class="game-title">MARS MATRIX <span class="pro-text">PRO</span></h1>
+            <p class="game-tagline" style="margin-bottom:15px;">🎯 10 NIVELES + MODOS ESPECIALES</p>
+
+            <!-- ===== DIFICULTAD ===== -->
+            <div class="difficulty-section">
+                <div class="panel-title" style="font-size:1rem;">🎯 SELECCIONA DIFICULTAD</div>
+                <div class="difficulty-grid">
+                    <button class="difficulty-btn" data-diff="easy" style="background:linear-gradient(135deg,#44FF88,#00AA44);">🌙 FÁCIL</button>
+                    <button class="difficulty-btn selected" data-diff="normal" style="background:linear-gradient(135deg,#FFD700,#FF8C00);">🌞 NORMAL</button>
+                    <button class="difficulty-btn" data-diff="hard" style="background:linear-gradient(135deg,#FF4444,#880000);">☠️ DIFÍCIL</button>
+                </div>
+            </div>
+
+            <!-- ===== ESTADÍSTICAS ===== -->
+            <div class="stats-section">
+                <div class="main-stats">
+                    <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-info"><div class="stat-label">HIGH SCORE</div><div id="highScoreDisplay" class="stat-value">0</div></div></div>
+                    <div class="stat-card"><div class="stat-icon">🚀</div><div class="stat-info"><div class="stat-label">MEJOR NIVEL</div><div id="bestLevel" class="stat-value">1</div></div></div>
+                    <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-info"><div class="stat-label">PUNTOS TOTALES</div><div id="totalScoreDisplay" class="stat-value">0</div></div></div>
+                    <div class="stat-card"><div class="stat-icon">🎮</div><div class="stat-info"><div class="stat-label">PARTIDAS</div><div id="gamesPlayedDisplay" class="stat-value">0</div></div></div>
+                    <div class="stat-card"><div class="stat-icon">💀</div><div class="stat-info"><div class="stat-label">ENEMIGOS</div><div id="enemiesKilledDisplay" class="stat-value">0</div></div></div>
+                    <div class="stat-card"><div class="stat-icon">🏅</div><div class="stat-info"><div class="stat-label">LOGROS</div><div id="achievementsDisplay" class="stat-value" style="color:#FFD700;">0/10</div></div></div>
+                </div>
+            </div>
+
+            <!-- ===== NIVELES ===== -->
+            <div class="levels-section">
+                <div class="panel-title">🎮 SELECCIONA UN NIVEL</div>
+                <div class="levels-grid">
+                    <div class="level-card unlocked" data-level="1">
+                        <div class="level-header">
+                            <div class="level-icon">🌌</div>
+                            <div class="level-info"><div class="level-number">NIVEL 1</div><div class="level-name">INVASIÓN INICIAL</div></div>
+                            <div class="level-status unlocked">✅ DESBLOQUEADO</div>
+                        </div>
+                        <button id="playLevel1" class="level-btn play-level-btn">🎯 JUGAR</button>
+                        <div class="level-reward">⭐ Enemigos básicos - Fácil</div>
+                    </div>
+                    <div class="level-card locked" data-level="2">
+                        <div class="level-header">
+                            <div class="level-icon">⚡</div>
+                            <div class="level-info"><div class="level-number">NIVEL 2</div><div class="level-name">OLEADA ENEMIGA</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel2" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">🔥 Enemigos medios - Normal</div>
+                    </div>
+                    <div class="level-card locked" data-level="3">
+                        <div class="level-header">
+                            <div class="level-icon">💀</div>
+                            <div class="level-info"><div class="level-number">NIVEL 3</div><div class="level-name">ASALTO FINAL</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel3" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">👑 Jefe 1 - Señor de Enjambres</div>
+                    </div>
+                    <div class="level-card locked" data-level="4">
+                        <div class="level-header">
+                            <div class="level-icon">🌀</div>
+                            <div class="level-info"><div class="level-number">NIVEL 4</div><div class="level-name">VÓRTICE CÓSMICO</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel4" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">👑 Jefe 2 - Destructor Galáctico</div>
+                    </div>
+                    <div class="level-card locked" data-level="5">
+                        <div class="level-header">
+                            <div class="level-icon">🕸️</div>
+                            <div class="level-info"><div class="level-number">NIVEL 5</div><div class="level-name">TELARAÑA ESTELAR</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel5" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">👑 Jefe 3 - Araña Cósmica</div>
+                    </div>
+                    <div class="level-card locked" data-level="6">
+                        <div class="level-header">
+                            <div class="level-icon">🔥</div>
+                            <div class="level-info"><div class="level-number">NIVEL 6</div><div class="level-name">NEBULOSA ARDIENTE</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel6" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">👑 Jefe 4 - Emperador Oscuro</div>
+                    </div>
+                    <div class="level-card locked" data-level="7">
+                        <div class="level-header">
+                            <div class="level-icon">⚔️</div>
+                            <div class="level-info"><div class="level-number">NIVEL 7</div><div class="level-name">ENCRUCIJADA ÉLITE</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel7" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">💀 Jefe 5 - Avatar del Caos</div>
+                    </div>
+                    <div class="level-card locked" data-level="8">
+                        <div class="level-header">
+                            <div class="level-icon">🌊</div>
+                            <div class="level-info"><div class="level-number">NIVEL 8</div><div class="level-name">TORMENTA ENEMIGA</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel8" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">⚡ Jefe 6 - Señor de Tormentas</div>
+                    </div>
+                    <div class="level-card locked" data-level="9">
+                        <div class="level-header">
+                            <div class="level-icon">💥</div>
+                            <div class="level-info"><div class="level-number">NIVEL 9</div><div class="level-name">UMBRAL DEL CAOS</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel9" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">🌀 Jefe 7 - Guardián Élite</div>
+                    </div>
+                    <div class="level-card locked" data-level="10">
+                        <div class="level-header">
+                            <div class="level-icon">🌟</div>
+                            <div class="level-info"><div class="level-number">NIVEL 10</div><div class="level-name">LEGADO GALÁCTICO</div></div>
+                            <div class="level-status locked">🔒 BLOQUEADO</div>
+                        </div>
+                        <button id="playLevel10" class="level-btn play-level-btn" disabled>🔒 BLOQUEADO</button>
+                        <div class="level-reward">🏆 Jefe 8 - Ejecutor Cósmico</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== MODOS ESPECIALES ===== -->
+            <div class="levels-section special-levels">
+                <div class="panel-title" style="border-color:#FFD700;">⭐ MODOS ESPECIALES ⭐</div>
+                <div class="levels-grid">
+                    <div class="level-card unlocked special-card" data-level="bossrush" style="border-color:#FF4444;">
+                        <div class="level-header">
+                            <div class="level-icon">👾</div>
+                            <div class="level-info"><div class="level-number">MODO BOSS RUSH</div><div class="level-name">⚔️ Enfrenta a todos los jefes</div></div>
+                            <div class="level-status unlocked">⭐ ESPECIAL</div>
+                        </div>
+                        <button id="playBossRush" class="level-btn special-btn" style="background:linear-gradient(135deg,#FF4444,#880000);color:#fff;">⚔️ JUGAR</button>
+                        <div class="level-reward">🔥 11 bosses en secuencia (incluye Fusión)</div>
+                    </div>
+                    <div class="level-card unlocked special-card" data-level="bossplayer" style="border-color:#FFD700;">
+                        <div class="level-header">
+                            <div class="level-icon">⭐</div>
+                            <div class="level-info"><div class="level-number">MODO BOSS PLAYER</div><div class="level-name">👾 Juega como un jefe</div></div>
+                            <div class="level-status unlocked">⭐ ESPECIAL</div>
+                        </div>
+                        <div class="boss-select-grid">
+                            <button class="boss-select-btn selected" data-boss="BOSS1" style="background:#FF4444;"><span class="boss-select-icon">👾</span><span class="boss-select-name">BOSS 1</span></button>
+                            <button class="boss-select-btn" data-boss="BOSS2" style="background:#44FF44;"><span class="boss-select-icon">👾</span><span class="boss-select-name">BOSS 2</span></button>
+                            <button class="boss-select-btn" data-boss="BOSS3" style="background:#AA44FF;"><span class="boss-select-icon">👾</span><span class="boss-select-name">BOSS 3</span></button>
+                            <button class="boss-select-btn" data-boss="BOSS4" style="background:#FFD700;"><span class="boss-select-icon">⭐</span><span class="boss-select-name">BOSS 4</span></button>
+                            <button class="boss-select-btn" data-boss="BOSS5" style="background:#FF00FF;"><span class="boss-select-icon">🔥</span><span class="boss-select-name">BOSS 5</span></button>
+                        </div>
+                        <div id="bossPlayerPreview" style="text-align:center;color:#FFD700;font-size:0.8rem;margin:5px 0;">👾 BOSS 1 seleccionado</div>
+                        <button id="playBossPlayer" class="level-btn special-btn" style="background:linear-gradient(135deg,#FFD700,#AA8800);color:#000;">⭐ JUGAR COMO BOSS</button>
+                        <div class="level-reward">💀 Elimina enemigos como un jefe</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== BOTONES DE ACCIÓN ===== -->
+            <div class="actions-section">
+                <button id="shopButton" class="action-btn shop-btn">🛒 TIENDA</button>
+                <button id="fullscreenBtn" class="action-btn fullscreen-btn">🖥️ PANTALLA COMPLETA</button>
+                <button id="soundToggle" class="action-btn sound-btn">🔊 SONIDO: ON</button>
+                <button id="howToPlayBtn" class="action-btn info-btn">❓ CÓMO JUGAR</button>
+            </div>
+
+            <div class="mobile-info">
+                <div class="mobile-icon">📱</div>
+                <div class="mobile-text"><strong>MÓVIL:</strong> Controles táctiles abajo</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TIENDA ==================== -->
+    <div id="shopScreen" class="screen">
+        <div class="stars"></div>
+        <div class="screen-content">
+            <button id="closeShop" class="back-btn">← VOLVER</button>
+            <div class="login-header">
+                <h2 class="login-title">🛒 TIENDA</h2>
+                <p class="game-tagline">Mejora tu nave con monedas</p>
+                <div id="shopCoins" style="font-size:1.8rem;color:#FFD700;margin-top:10px;font-weight:bold;">💰 0</div>
+            </div>
+            <div class="shop-section">
+                <h3 style="color:#00ffaa;text-align:center;margin-bottom:15px;">🚀 NAVES</h3>
+                <div class="shop-grid">
+                    <div class="ship-item" data-ship="player">
+                        <div class="ship-icon">🛸</div>
+                        <div class="ship-info"><div class="ship-name">Nave Base</div><div class="ship-stats">⚡ Daño: 1 | 💨 Vel: 5</div><div class="ship-status" style="color:#00FF00;">✅ SELECCIONADA</div></div>
+                        <button class="ship-btn" disabled>✅ SELECCIONADA</button>
+                    </div>
+                    <div class="ship-item" data-ship="nave1">
+                        <div class="ship-icon">🚀</div>
+                        <div class="ship-info"><div class="ship-name">Nave Ágil</div><div class="ship-stats">⚡ Daño: 1 | 💨 Vel: 6</div><div class="ship-desc" style="color:#44FF88;">⚡ +Velocidad</div><div class="ship-status">🔒 COMPRAR</div></div>
+                        <button class="ship-btn">💰 COMPRAR (500)</button>
+                    </div>
+                    <div class="ship-item" data-ship="nave2">
+                        <div class="ship-icon">🛡️</div>
+                        <div class="ship-info"><div class="ship-name">Nave Tanque</div><div class="ship-stats">⚡ Daño: 1 | 💨 Vel: 4</div><div class="ship-desc" style="color:#FF8844;">❤️ +2 Vidas</div><div class="ship-status">🔒 COMPRAR</div></div>
+                        <button class="ship-btn">💰 COMPRAR (1000)</button>
+                    </div>
+                    <div class="ship-item" data-ship="nave3">
+                        <div class="ship-icon">⭐</div>
+                        <div class="ship-info"><div class="ship-name">Nave Élite</div><div class="ship-stats">⚡ Daño: 2 | 💨 Vel: 6</div><div class="ship-desc" style="color:#FF44FF;">⚡ +Daño +Velocidad</div><div class="ship-status">🔒 COMPRAR</div></div>
+                        <button class="ship-btn">💰 COMPRAR (2000)</button>
+                    </div>
+                </div>
+            </div>
+            <div class="shop-section">
+                <h3 style="color:#00ffaa;text-align:center;margin-bottom:15px;">⚡ MEJORAS</h3>
+                <div class="shop-grid upgrades-grid">
+                    <div class="upgrade-item" data-upgrade="damage">
+                        <div class="upgrade-icon">⚔️</div>
+                        <div class="upgrade-info"><div class="upgrade-name">Daño +1</div><div class="upgrade-desc">Aumenta el daño de tus disparos</div><div class="upgrade-level">Nivel: 0/5</div><div class="upgrade-cost">💰 300</div></div>
+                        <button class="upgrade-btn">⬆️ MEJORAR</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="speed">
+                        <div class="upgrade-icon">💨</div>
+                        <div class="upgrade-info"><div class="upgrade-name">Velocidad +0.5</div><div class="upgrade-desc">Aumenta la velocidad de la nave</div><div class="upgrade-level">Nivel: 0/5</div><div class="upgrade-cost">💰 200</div></div>
+                        <button class="upgrade-btn">⬆️ MEJORAR</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="lives">
+                        <div class="upgrade-icon">❤️</div>
+                        <div class="upgrade-info"><div class="upgrade-name">Vida Extra</div><div class="upgrade-desc">Gana una vida adicional</div><div class="upgrade-level">Nivel: 0/3</div><div class="upgrade-cost">💰 400</div></div>
+                        <button class="upgrade-btn">⬆️ MEJORAR</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="absorb">
+                        <div class="upgrade-icon">🛡️</div>
+                        <div class="upgrade-info"><div class="upgrade-name">Absorción +10</div><div class="upgrade-desc">Aumenta la energía de absorción</div><div class="upgrade-level">Nivel: 0/5</div><div class="upgrade-cost">💰 350</div></div>
+                        <button class="upgrade-btn">⬆️ MEJORAR</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="support">
+                        <div class="upgrade-icon">🔫</div>
+                        <div class="upgrade-info"><div class="upgrade-name">Apoyo +Daño</div><div class="upgrade-desc">Aumenta el daño de la nave de apoyo</div><div class="upgrade-level">Nivel: 0/3</div><div class="upgrade-cost">💰 500</div></div>
+                        <button class="upgrade-btn">⬆️ MEJORAR</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="shield">
+                        <div class="upgrade-icon">🛡️</div>
+                        <div class="upgrade-info"><div class="upgrade-name">Escudo +1s</div><div class="upgrade-desc">Aumenta duración del escudo</div><div class="upgrade-level">Nivel: 0/3</div><div class="upgrade-cost">💰 600</div></div>
+                        <button class="upgrade-btn">⬆️ MEJORAR</button>
+                    </div>
+                    <div class="upgrade-item" data-upgrade="special">
+                        <div class="upgrade-icon">💥</div>
+                        <div class="upgrade-info"><div class="upgrade-name">Habilidad Especial</div><div class="upgrade-desc">Reduce enfriamiento de habilidad</div><div class="upgrade-level">Nivel: 0/3</div><div class="upgrade-cost">💰 700</div></div>
+                        <button class="upgrade-btn">⬆️ MEJORAR</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== CÓMO JUGAR ==================== -->
+    <div id="howToPlayScreen" class="screen">
+        <div class="stars"></div>
+        <div class="screen-content">
+            <button id="backFromHowToPlay" class="back-btn">← VOLVER</button>
+            <div class="login-header"><h2 class="login-title">🎮 CÓMO JUGAR</h2><p class="game-tagline">Domina el juego en minutos</p></div>
+            <div class="instructions-content">
+                <div class="instruction-section"><h3>🎯 OBJETIVO</h3><p>Destruye enemigos, esquiva ataques y sobrevive para obtener la máxima puntuación.</p></div>
+                <div class="instruction-section">
+                    <h3>🎮 CONTROLES</h3>
+                    <div class="controls-grid">
+                        <div class="control-item"><div class="control-icon">⬅️➡️⬆️⬇️</div><div class="control-text">Flechas / WASD</div></div>
+                        <div class="control-item"><div class="control-icon">🔴</div><div class="control-text">Disparar: ESPACIO</div></div>
+                        <div class="control-item"><div class="control-icon">⭐</div><div class="control-text">Absorber: SHIFT</div></div>
+                        <div class="control-item"><div class="control-icon">💥</div><div class="control-text">Habilidad Especial: X</div></div>
+                        <div class="control-item"><div class="control-icon">⏸️</div><div class="control-text">Pausa: P</div></div>
+                        <div class="control-item"><div class="control-icon">🚀</div><div class="control-text">Nave Apoyo: F (3 usos)</div></div>
+                        <div class="control-item"><div class="control-icon">🛡️</div><div class="control-text">Escudo: G (2 usos)</div></div>
+                    </div>
+                </div>
+                <div class="instruction-section">
+                    <h3>💎 POWER-UPS</h3>
+                    <div class="powerups-grid">
+                        <div class="powerup-item"><div class="powerup-icon" style="color:#ff0000;">🔴</div><div class="powerup-text">BURST - Disparo circular</div></div>
+                        <div class="powerup-item"><div class="powerup-icon" style="color:#00ff00;">🟢</div><div class="powerup-text">RAPID - Disparo rápido</div></div>
+                        <div class="powerup-item"><div class="powerup-icon" style="color:#0088ff;">🔵</div><div class="powerup-text">SPREAD - Disparo disperso</div></div>
+                        <div class="powerup-item"><div class="powerup-icon" style="color:#ffd700;">🌟</div><div class="powerup-text">GOLD - Vida extra</div></div>
+                    </div>
+                </div>
+                <div class="instruction-section">
+                    <h3>🎯 CONSEJOS</h3>
+                    <ul class="tips-list">
+                        <li>Mantente en movimiento para evitar proyectiles</li>
+                        <li>Usa SHIFT para absorber balas enemigas</li>
+                        <li>Presiona <strong>X</strong> para usar la habilidad especial</li>
+                        <li>Presiona <strong>F</strong> para activar la nave de apoyo (3 usos por nivel)</li>
+                        <li>Presiona <strong>G</strong> para activar el escudo (2 usos por nivel)</li>
+                        <li>Los jefes invocan naves de apoyo, ¡destrúyelas!</li>
+                        <li>¡Encadena muertes para multiplicar puntos!</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== JUEGO ==================== -->
+    <div id="gameScreen" class="screen">
+        <div class="game-controls-top">
+            <div class="control-left">
+                <button id="pauseGameBtn" class="control-top-btn">⏸️ PAUSA</button>
+                <button id="muteGameBtn" class="control-top-btn">🔊 SONIDO</button>
+            </div>
+            <div class="control-center">
+                <span id="gameTimer" class="game-timer">⏱️ 00:00</span>
+                <span id="levelProgress" class="game-progress">🌊 0/5</span>
+            </div>
+            <div class="control-right">
+                <span id="comboDisplay" class="combo-display">🔥 0x</span>
+                <span id="highScoreHUD" class="high-score-hud">🏆 0</span>
+            </div>
+        </div>
+        <div id="game-container">
+            <canvas id="game-canvas"></canvas>
+            <div id="ui">
+                <div id="score">🏆 0</div>
+                <div id="lives">❤️ 3</div>
+                <div id="level">🎯 1-1</div>
+                <div id="special-charge">⚡ 100%</div>
+                <div id="special-ability">💥 ESPECIAL: ■■■</div>
+                <div id="enemies-count">👾 0</div>
+                <div id="chain-display">🔥 CHAIN: 0x</div>
+                <div id="support-display">🛸 APOYO: ■■■ (3)</div>
+                <div id="shield-display">🛡️ ESCUDO: ■■ (2)</div>
+            </div>
+            <div id="boss-warning" style="display:none;">
+                <div class="boss-warning-text">⚠️ ¡JEFE INMINENTE! ⚠️</div>
+                <div class="boss-countdown">3</div>
+                <div class="boss-name-display"></div>
+            </div>
+            <div id="damage-flash" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(255,0,0,0.3);pointer-events:none;z-index:15;"></div>
+            <div id="level-complete" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:25;">
+                <div style="background:rgba(0,0,0,0.95);padding:40px;border-radius:20px;border:3px solid #FFD700;">
+                    <h2 style="color:#FFD700;font-size:2rem;">🎉 NIVEL COMPLETADO!</h2>
+                    <div id="levelStats" style="color:#fff;font-size:1rem;margin:15px 0;text-align:left;"></div>
+                    <div style="color:#FFD700;font-size:1.5rem;margin:10px 0;">+<span id="levelBonus">0</span> PUNTOS BONUS</div>
+                    <button id="continueBtn" class="game-over-btn primary-btn" style="padding:15px 40px;font-size:1.2rem;">➡️ CONTINUAR</button>
+                </div>
+            </div>
+            <div id="game-over">
+                <h2 id="gameOverTitle">💀 GAME OVER</h2>
+                <div id="final-score">🏆 Puntuación: 0</div>
+                <div id="level-reached">🎯 Nivel: 1</div>
+                <div id="chain-record">🔥 Cadena: 0x</div>
+                <div id="achievements-unlocked" style="color:#FFD700;font-size:0.9rem;margin:10px 0;"></div>
+                <p id="gameOverMessage">¿Quieres intentarlo de nuevo?</p>
+                <div class="game-over-buttons">
+                    <button id="restart-btn" class="game-over-btn primary-btn">🔄 REINICIAR</button>
+                    <button id="menu-btn" class="game-over-btn secondary-btn">🏠 MENÚ</button>
+                </div>
+            </div>
+        </div>
+        <div class="mobile-controls">
+            <div class="control-group">
+                <button id="moveLeft" class="control-btn move-btn">◀</button>
+                <button id="moveUp" class="control-btn move-btn">▲</button>
+                <button id="shootBtn" class="control-btn shoot-btn">💥</button>
+                <button id="moveDown" class="control-btn move-btn">▼</button>
+                <button id="moveRight" class="control-btn move-btn">▶</button>
+                <button id="specialBtn" class="control-btn special-btn">⭐</button>
+                <button id="supportBtn" class="control-btn support-btn">🚀</button>
+                <button id="shieldBtn" class="control-btn shield-btn">🛡️</button>
+                <button id="abilityBtn" class="control-btn ability-btn">💥</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PAUSA ==================== -->
+    <div id="pauseScreen" class="screen">
+        <div class="stars"></div>
+        <div class="screen-content">
+            <div class="login-header"><h2 class="login-title">⏸️ JUEGO PAUSADO</h2><p class="game-tagline">¿Qué quieres hacer?</p></div>
+            <div class="pause-stats">
+                <div class="stat-card"><div class="stat-icon">🏆</div><div class="stat-info"><div class="stat-label">PUNTUACIÓN</div><div id="pauseCurrentScore" class="stat-value">0</div></div></div>
+                <div class="stat-card"><div class="stat-icon">🎯</div><div class="stat-info"><div class="stat-label">NIVEL</div><div id="pauseCurrentLevel" class="stat-value">1</div></div></div>
+                <div class="stat-card"><div class="stat-icon">❤️</div><div class="stat-info"><div class="stat-label">VIDAS</div><div id="pauseCurrentLives" class="stat-value">3</div></div></div>
+            </div>
+            <div class="pause-actions">
+                <button id="resumeGameBtn" class="pause-action-btn resume-btn">▶️ CONTINUAR</button>
+                <button id="restartFromPauseBtn" class="pause-action-btn restart-btn">🔄 REINICIAR</button>
+                <button id="quitToMenuBtn" class="pause-action-btn quit-btn">🏠 SALIR</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/game.js"></script>
+</body>
+</html>
