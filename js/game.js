@@ -1,5 +1,5 @@
 // ========================================================================
-// MARS MATRIX PRO - VERSIÓN COMPLETA CON TAMAÑOS OPTIMIZADOS
+// MARS MATRIX PRO - VERSIÓN COMPLETA CON OPTIMIZACIÓN MÓVIL
 // ========================================================================
 
 // ==================== CONFIGURACIÓN ====================
@@ -121,7 +121,29 @@ let shopData = {
     upgrades: { damage: 0, speed: 0, lives: 0, absorb: 0, support: 0, shield: 0, special: 0 }
 };
 
-// ===== NAVE DE APOYO (28x28) =====
+// ===== DETECCIÓN DE DISPOSITIVO MÓVIL =====
+const IS_MOBILE = /Android|iPhone|iPad|iPod|BlackBerry|Opera Mini|IEMobile/i.test(navigator.userAgent);
+const IS_TOUCH = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+let lowPerformance = false;
+let autoShoot = true;
+let autoShootTimer = 0;
+const AUTO_SHOOT_DELAY = 130;
+
+// ===== JOYSTICK =====
+let joystick = {
+    active: false,
+    startX: 0,
+    startY: 0,
+    currentX: 0,
+    currentY: 0,
+    dx: 0,
+    dy: 0,
+    radius: 30,
+    element: null,
+    knob: null
+};
+
+// ===== NAVE DE APOYO =====
 let supportShip = {
     active: false,
     x: 0, y: 0,
@@ -134,7 +156,7 @@ let supportShip = {
     shootTimer: 0
 };
 
-// ===== ESCUDO (radio 45) =====
+// ===== ESCUDO =====
 let shield = {
     active: false,
     usesLeft: CONFIG.SHIELD.maxUses,
@@ -197,10 +219,257 @@ function initGame() {
     setupUI();
     initAchievements();
     
+    // Mejoras móviles
+    if (IS_MOBILE || IS_TOUCH) {
+        setupMobileControls();
+        setupGestures();
+        detectPerformance();
+        document.querySelector('.mobile-controls').style.display = 'block';
+        resizeCanvas();
+    }
+    
     showScreen('loginScreen');
     updateSoundButtons();
     requestAnimationFrame(gameLoop);
     console.log('✅ Mars Matrix PRO iniciado');
+}
+
+// ==================== REDIMENSIONAR CANVAS ====================
+function resizeCanvas() {
+    const container = document.getElementById('game-container');
+    if (!container) return;
+    const maxWidth = window.innerWidth - 16;
+    const maxHeight = window.innerHeight - 160;
+    const aspect = CONFIG.CANVAS_WIDTH / CONFIG.CANVAS_HEIGHT;
+    
+    let w = maxWidth;
+    let h = w / aspect;
+    if (h > maxHeight) {
+        h = maxHeight;
+        w = h * aspect;
+    }
+    
+    container.style.width = Math.max(240, w) + 'px';
+    container.style.height = Math.max(320, h) + 'px';
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+}
+
+window.addEventListener('resize', () => {
+    if (gameState === 'PLAYING' || gameState === 'PAUSED') {
+        resizeCanvas();
+    }
+});
+
+window.addEventListener('orientationchange', () => {
+    setTimeout(resizeCanvas, 300);
+});
+
+// ==================== DETECCIÓN DE RENDIMIENTO ====================
+function detectPerformance() {
+    const start = performance.now();
+    for (let i = 0; i < 1000; i++) {
+        Math.sqrt(i * 1000);
+    }
+    const duration = performance.now() - start;
+    if (duration > 5) {
+        lowPerformance = true;
+        CONFIG.MAX_PARTICLES = 40;
+        console.log('🔽 Modo bajo rendimiento activado');
+    }
+}
+
+// ==================== JOYSTICK ====================
+function setupJoystick() {
+    const area = document.querySelector('.joystick-area');
+    const knob = document.querySelector('.joystick-knob');
+    if (!area || !knob) return;
+    
+    joystick.element = area;
+    joystick.knob = knob;
+    
+    const start = (e) => {
+        e.preventDefault();
+        const touch = e.touches ? e.touches[0] : e;
+        const rect = area.getBoundingClientRect();
+        joystick.active = true;
+        joystick.startX = rect.left + rect.width / 2;
+        joystick.startY = rect.top + rect.height / 2;
+        joystick.currentX = touch.clientX;
+        joystick.currentY = touch.clientY;
+        updateJoystick(touch.clientX, touch.clientY);
+    };
+    
+    const move = (e) => {
+        e.preventDefault();
+        if (!joystick.active) return;
+        const touch = e.touches ? e.touches[0] : e;
+        joystick.currentX = touch.clientX;
+        joystick.currentY = touch.clientY;
+        updateJoystick(touch.clientX, touch.clientY);
+    };
+    
+    const end = (e) => {
+        e.preventDefault();
+        joystick.active = false;
+        joystick.dx = 0;
+        joystick.dy = 0;
+        joystick.knob.style.transform = 'translate(-50%, -50%)';
+        keys['ArrowLeft'] = false;
+        keys['ArrowRight'] = false;
+        keys['ArrowUp'] = false;
+        keys['ArrowDown'] = false;
+    };
+    
+    area.addEventListener('touchstart', start, { passive: false });
+    area.addEventListener('touchmove', move, { passive: false });
+    area.addEventListener('touchend', end, { passive: false });
+    area.addEventListener('touchcancel', end, { passive: false });
+    
+    area.addEventListener('mousedown', start);
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', end);
+}
+
+function updateJoystick(clientX, clientY) {
+    const dx = clientX - joystick.startX;
+    const dy = clientY - joystick.startY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxDist = joystick.radius;
+    const clampedDist = Math.min(dist, maxDist);
+    const angle = Math.atan2(dy, dx);
+    
+    const normX = (clampedDist / maxDist) * (dx / (dist || 1));
+    const normY = (clampedDist / maxDist) * (dy / (dist || 1));
+    
+    joystick.dx = normX;
+    joystick.dy = normY;
+    
+    const deadZone = 0.15;
+    keys['ArrowRight'] = normX > deadZone;
+    keys['ArrowLeft'] = normX < -deadZone;
+    keys['ArrowDown'] = normY > deadZone;
+    keys['ArrowUp'] = normY < -deadZone;
+    
+    const knobX = normX * maxDist;
+    const knobY = normY * maxDist;
+    joystick.knob.style.transform = `translate(calc(-50% + ${knobX}px), calc(-50% + ${knobY}px))`;
+}
+
+// ==================== GESTOS TÁCTILES ====================
+let lastTapTime = 0;
+let tapCount = 0;
+
+function setupGestures() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    
+    document.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+    }, { passive: true });
+    
+    document.addEventListener('touchend', (e) => {
+        const dt = Date.now() - touchStartTime;
+        const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+        const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+        
+        if (dt < 300 && dx < 20 && dy < 20) {
+            tapCount++;
+            if (tapCount === 2) {
+                tapCount = 0;
+                if (gameState === 'PLAYING') togglePause();
+            }
+            setTimeout(() => { tapCount = 0; }, 400);
+        }
+    }, { passive: true });
+}
+
+// ==================== CONTROLES MÓVILES ====================
+function setupMobileControls() {
+    if (!IS_MOBILE && !IS_TOUCH) return;
+    
+    setupJoystick();
+    
+    // Toggle de disparo automático
+    const shootBtn = document.getElementById('shootBtn');
+    if (shootBtn) {
+        shootBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            autoShoot = !autoShoot;
+            shootBtn.classList.toggle('shoot-off', !autoShoot);
+            shootBtn.textContent = autoShoot ? '💥' : '⏸️';
+            if (navigator.vibrate) navigator.vibrate(10);
+        }, { passive: false });
+        
+        shootBtn.addEventListener('click', () => {
+            autoShoot = !autoShoot;
+            shootBtn.classList.toggle('shoot-off', !autoShoot);
+            shootBtn.textContent = autoShoot ? '💥' : '⏸️';
+        });
+    }
+    
+    // Botones de habilidad
+    const btnMap = {
+        'supportBtn': 'support',
+        'shieldBtn': 'shield',
+        'abilityBtn': 'ability',
+        'specialBtn': 'special'
+    };
+    
+    Object.entries(btnMap).forEach(([id, action]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        
+        el.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            el.style.transform = 'scale(0.85)';
+            switch(action) {
+                case 'support': activateSupportShip(); break;
+                case 'shield': activateShield(); break;
+                case 'ability': activateSpecialAbility(); break;
+                case 'special': 
+                    if (player && player.isAbsorbing) {
+                        player.isAbsorbing = false;
+                        player.absorbEnergy -= CONFIG.ABSORB_ENERGY_COST;
+                        player.weaponLevel = Math.min(3, player.weaponLevel + 1);
+                        player.powerTimer = 600;
+                        playSound('powerup', 0.2);
+                    } else if (player && player.absorbEnergy >= CONFIG.ABSORB_ENERGY_COST) {
+                        player.isAbsorbing = true;
+                        playSound('powerup', 0.2);
+                    }
+                    break;
+            }
+        }, { passive: false });
+        
+        el.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            el.style.transform = 'scale(1)';
+        }, { passive: false });
+        
+        el.addEventListener('click', () => {
+            switch(action) {
+                case 'support': activateSupportShip(); break;
+                case 'shield': activateShield(); break;
+                case 'ability': activateSpecialAbility(); break;
+                case 'special':
+                    if (player && player.isAbsorbing) {
+                        player.isAbsorbing = false;
+                        player.absorbEnergy -= CONFIG.ABSORB_ENERGY_COST;
+                        player.weaponLevel = Math.min(3, player.weaponLevel + 1);
+                        player.powerTimer = 600;
+                        playSound('powerup', 0.2);
+                    } else if (player && player.absorbEnergy >= CONFIG.ABSORB_ENERGY_COST) {
+                        player.isAbsorbing = true;
+                        playSound('powerup', 0.2);
+                    }
+                    break;
+            }
+        });
+    });
 }
 
 // ==================== AUDIO ====================
@@ -228,7 +497,6 @@ function initAudio() {
         } catch(e) {}
     });
     
-    // Sonidos adicionales
     try {
         sounds.bossWarning = new Audio('sound/bossWarning.mp3');
         sounds.bossWarning.volume = 0.35;
@@ -248,8 +516,6 @@ function initAudio() {
         sounds.achievement.volume = 0.35;
         sounds.support = new Audio('sound/powerup.wav');
         sounds.support.volume = 0.2;
-        sounds.shield = new Audio('sound/powerup.wav');
-        sounds.shield.volume = 0.2;
     } catch(e) {
         createFallbackSounds();
     }
@@ -394,7 +660,7 @@ function toggleSound() {
 
 function updateSoundButtons() {
     const b = document.getElementById('soundToggle');
-    if (b) b.innerHTML = soundEnabled ? '🔊 ON' : '🔇 OFF';
+    if (b) b.innerHTML = soundEnabled ? '🔊 SONIDO: ON' : '🔇 SONIDO: OFF';
     const m = document.getElementById('muteGameBtn');
     if (m) m.innerHTML = soundEnabled ? '🔊' : '🔇';
 }
@@ -1043,7 +1309,7 @@ function loadImages() {
     });
 }
 
-// ==================== ENTIDADES (TAMAÑOS OPTIMIZADOS) ====================
+// ==================== ENTIDADES ====================
 function createPlayer() {
     const s = getShipStats(shopData.selectedShip);
     return {
@@ -1130,7 +1396,7 @@ function createEnemy(type, x, y) {
     };
 }
 
-// ==================== BOSSES CON PODERES ÚNICOS ====================
+// ==================== BOSSES ====================
 function createBossEntity(levelIndex) {
     const lvl = levelIndex || level;
     
@@ -1592,7 +1858,8 @@ function activateSpecialAbility() {
         }
     }
     
-    for (let i = 0; i < 40; i++) {
+    const particleCount = lowPerformance ? 20 : 40;
+    for (let i = 0; i < particleCount; i++) {
         const a = Math.random() * Math.PI * 2;
         const d = Math.random() * radius;
         particles.push({
@@ -1726,7 +1993,8 @@ function updateBossSupportShips() {
 // ==================== PARTÍCULAS ====================
 function createExplosion(x, y, color, count = 15, size = 1) {
     if (particles.length > CONFIG.MAX_PARTICLES) return;
-    for (let i = 0; i < Math.min(count, CONFIG.MAX_PARTICLES - particles.length); i++) {
+    const maxCount = lowPerformance ? Math.floor(count * 0.5) : count;
+    for (let i = 0; i < Math.min(maxCount, CONFIG.MAX_PARTICLES - particles.length); i++) {
         const a = Math.random() * Math.PI * 2;
         const s = (Math.random() * 4 + 1) * size;
         particles.push({
@@ -1750,11 +2018,12 @@ function createExplosion(x, y, color, count = 15, size = 1) {
 }
 
 function createTextParticle(x, y, text, color = '#FFFFFF', size = 14) {
+    const fontSize = lowPerformance ? Math.min(size, 16) : size;
     particles.push({
         x, y,
         text,
         color,
-        fontSize: size,
+        fontSize: fontSize,
         vx: 0,
         vy: -1.5,
         life: 30,
@@ -1939,7 +2208,7 @@ function enemyShoot(enemy) {
     playSound('enemyshoot', 0.1);
 }
 
-// ==================== GEMAS (18x18) ====================
+// ==================== GEMAS ====================
 function spawnGem(x, y) {
     const types = ['RED', 'GREEN', 'BLUE'];
     if (Math.random() < 0.1) {
@@ -2004,7 +2273,7 @@ function createBurstShot() {
     playSound('powerup', 0.25);
 }
 
-// ==================== BOSS - ATAQUES ÚNICOS ====================
+// ==================== BOSS - ATAQUES ====================
 function updateBoss() {
     if (!boss || !boss.active) {
         if (boss && !boss.active && !isBossDefeated) {
@@ -2612,6 +2881,9 @@ function startGame(lvl) {
     updateShieldDisplay();
     updateSpecialDisplay();
     updateWaveProgress();
+    
+    // Redimensionar canvas después de mostrar la pantalla
+    setTimeout(resizeCanvas, 100);
 
     const diffLabel = CONFIG.DIFFICULTY[difficulty]?.label || '';
     createTextParticle(canvas.width / 2, canvas.height / 2, '🚀 NIVEL ' + level + ' ' + diffLabel, '#00FFFF', 28);
@@ -2631,6 +2903,7 @@ function togglePause() {
         document.getElementById('pauseCurrentLives').textContent = lives;
         document.getElementById('pauseScreen').classList.add('active');
         pauseSoundtrack();
+        if (navigator.vibrate) navigator.vibrate(20);
     } else if (gameState === 'PAUSED') {
         gameState = 'PLAYING';
         document.getElementById('pauseScreen').classList.remove('active');
@@ -2668,6 +2941,8 @@ function hitPlayer() {
     screenShake.duration = 10;
 
     playSound('explosion', 0.35);
+
+    if (navigator.vibrate) navigator.vibrate(50);
 
     if (lives <= 0) gameOver('GAME_OVER');
 }
@@ -2787,7 +3062,8 @@ function update() {
             }
         }
 
-        if (keys[' ']) shoot();
+        // Disparo manual (tecla espacio) - el auto-shoot se maneja en el loop principal
+        if (keys[' '] && !IS_MOBILE) shoot();
     }
 
     for (let i = bullets.length - 1; i >= 0; i--) {
@@ -2962,7 +3238,8 @@ function update() {
 }
 
 function createAbsorptionParticles(x, y, tx, ty) {
-    for (let i = 0; i < 8; i++) {
+    const count = lowPerformance ? 4 : 8;
+    for (let i = 0; i < count; i++) {
         const a = Math.random() * Math.PI * 2;
         const d = Math.random() * 10;
         particles.push({
@@ -3413,6 +3690,7 @@ function startBossRush() {
     updateSupportDisplay();
     updateShieldDisplay();
     updateSpecialDisplay();
+    setTimeout(resizeCanvas, 100);
     createTextParticle(canvas.width / 2, canvas.height / 2, '⚔️ BOSS RUSH ⚔️', '#FF4444', 28);
     createTextParticle(canvas.width / 2, canvas.height / 2 + 40, '1/' + bossRushQueue.length, '#FFAA00', 20);
     updateWaveProgress();
@@ -3456,16 +3734,36 @@ function startBossPlayer() {
     document.getElementById('game-over').style.display = 'none';
     document.getElementById('level-complete').style.display = 'none';
     updateHUD();
+    setTimeout(resizeCanvas, 100);
     createTextParticle(canvas.width / 2, canvas.height / 2, '👾 MODO BOSS: ' + player.label, player.color, 28);
     createTextParticle(canvas.width / 2, canvas.height / 2 + 40, '🔥 Destruye a todos!', '#FFFFFF', 18);
 }
 
+// ==================== LOOP PRINCIPAL ====================
 function gameLoop() {
     if (gameState === 'PLAYING' || gameState === 'PAUSED' || gameState === 'GAMEOVER') {
-        if (gameState === 'PLAYING') update();
+        if (gameState === 'PLAYING') {
+            // Disparo automático en móviles
+            if (IS_MOBILE && autoShoot && player) {
+                const now = Date.now();
+                if (now - autoShootTimer > AUTO_SHOOT_DELAY) {
+                    autoShootTimer = now;
+                    shoot();
+                }
+            }
+            update();
+        }
         draw();
         gameLoopId = requestAnimationFrame(gameLoop);
     } else {
         gameLoopId = requestAnimationFrame(gameLoop);
     }
 }
+
+// ==================== EXPORTAR PARA USO EXTERNO ====================
+window.initGame = initGame;
+window.togglePause = togglePause;
+window.restartGame = restartGame;
+window.startGame = startGame;
+window.startBossRush = startBossRush;
+window.startBossPlayer = startBossPlayer;
